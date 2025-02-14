@@ -40,22 +40,22 @@ router.route("/update-details").put(verifyJWT, updateAccountDetails);
 
 router.route("/update-avatar").put(
     verifyJWT, 
-    upload.fields(
+    upload.fields([
         {
             name: "avatar",
             maxCount: 1
         }
-    ), updateAvatar
+    ]), updateAvatar
 );
 
 router.route("/update-cover").put(
     verifyJWT, 
-    upload.fields(
+    upload.fields([
         {
             name: "coverImage",
             maxCount: 1
         }
-    ), updateCoverImage
+    ]), updateCoverImage
 );
 
 
