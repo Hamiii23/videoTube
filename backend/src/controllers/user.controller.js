@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from 'jsonwebtoken';
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
@@ -383,10 +384,10 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                     $size: "$subscribers"
                 },
                 subscribedToCount: {
-                    $size: "$subscribeTo"
+                    $size: "$subscribedTo"
                 },
                 isSubscribed: {
-                    $cod: {
+                    $cond: {
                         if: {$in: [req.user?._id, "$subscribers.subscriber"]},
                         then: true,
                         else: false

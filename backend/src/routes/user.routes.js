@@ -40,7 +40,7 @@ router.route("/logout").post(
 
 router.route("/refresh-token").post(refreshAccessToken);
 
-router.route("/change-password").put(
+router.route("/change-password").post(
     verifyJWT, 
     changeCurrentPassword
 );
@@ -61,7 +61,7 @@ router.route("/avatar").patch(
     updateAvatar
 );
 
-router.route("/cover-mage").patch(
+router.route("/cover-image").patch(
     verifyJWT, 
     upload.single("coverImage"),
      updateCoverImage
