@@ -61,7 +61,7 @@ router.route("/avatar").patch(
     updateAvatar
 );
 
-router.route("/coverImage").patch(
+router.route("/cover-mage").patch(
     verifyJWT, 
     upload.single("coverImage"),
      updateCoverImage
