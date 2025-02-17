@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Comment } from "../routes/comment.routes.js";
+import { Comment } from "../models/comment.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
