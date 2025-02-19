@@ -47,11 +47,14 @@ const updateTweets = asyncHandler(async (req, res) => {
     };
 
     const updatedTweet = await Tweet.findByIdAndUpdate(
+        tweetId,
         {
-            _id: tweetId
+            $set: {
+                content
+            }
         },
         {
-            content
+            new: true
         }
     );
 
@@ -59,12 +62,10 @@ const updateTweets = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Something went wrong while updating the tweet")
     };
 
-    const tweet = await Tweet.findById(tweetId);
-
     return res
     .status(200)
     .json(
-        new ApiResponse(200, tweet, "Tweet updated successfully")
+        new ApiResponse(200, updatedTweet, "Tweet updated successfully")
     );
 });
 
