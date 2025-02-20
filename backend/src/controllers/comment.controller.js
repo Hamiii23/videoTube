@@ -7,6 +7,35 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const getVideoComments = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
     const { page = 1, limit = 1 } = req.query;
+
+    if(!videoId) {
+        throw new ApiError(400, "Invalid video ID");
+    };
+
+    const userComments = await Comment.aggregate([
+        {
+            $match: {
+                video: videoId
+            }
+        },
+        {
+            $project: {
+                content: 1,
+                owner: 1
+            }
+        }
+    ]);
+
+    if(!userComments) {
+        throw new ApiError(500, "Something went wrong while fetching the comments");
+    };
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,userComments, "Comments for the video found successfully")
+    );
+
 });
 const addComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
