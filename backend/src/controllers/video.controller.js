@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
@@ -50,7 +50,23 @@ const publishVideo = asyncHandler(async (req, res) => {
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
 
+    if(!videoId) {
+        throw new ApiError(400, "Invalid video ID");
+    };
+
+    const video = await Video.findById(videoId);
+
+    if(!video) {
+        throw new ApiError(500, "Something went wrong while looking for the video");
+    };
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, video,"Video found successfully")
+    );
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
@@ -59,34 +75,37 @@ const updateVideo = asyncHandler(async (req, res) => {
     if(!videoId) {
         throw new ApiError(400, "Video ID is missing");
     };
+
+    const video = await Video.findById(videoId);
     
     const {title, description} = req.body;
     
-    if(!title || !description) {
-        throw new ApiError(400, "New title or description is missing");
+    if(title) {
+        video.title = title;
+        await video.save({validateBeforeSave: false});
+    };
+
+    if(description) {
+        video.description = description;
+        await video.save({validateBeforeSave: false});
     };
     
     const thumbnailLocalPath = req.file?.path;
+
     
-    if(!thumbnailLocalPath) {
-        throw new ApiError(400, "Thumbnail file is missing");
+    if(thumbnailLocalPath) {
+        const thumbnailLink = video.thumbnail;
+        
+        await deleteFromCloudinary(thumbnailLink, "image");
+
+        const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+
+        video.thumbnail = thumbnail.url
+        await video.save({ validateBeforeSave: false });
     };
     
-    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
 
-    const updatedVideo = await Video.findByIdAndUpdate(
-        videoId,
-        {
-            $set: {
-                title,
-                description,
-                thumbnail: thumbnail.url
-            }
-        },
-        {
-            new: true
-        }
-    );
+    const updatedVideo = await Video.findById(videoId);
 
     if(!updatedVideo) {
         throw new ApiError(500, "Something went wrong while updating the video");
@@ -105,6 +124,14 @@ const deleteVideo = asyncHandler(async (req, res) => {
     if(!videoId) {
         throw new ApiError(400, "Invalid video ID");
     };
+
+    const video = await Video.findById(videoId);
+    const videoLink = video.videoFile;
+    const thumbnailLink = video.thumbnail;
+    
+    await deleteFromCloudinary(videoLink, "video");
+    await deleteFromCloudinary(thumbnailLink, "image");
+
 
     const deleteVideo = await Video.deleteOne({
         _id: videoId

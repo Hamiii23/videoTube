@@ -288,10 +288,9 @@ const updateAvatar = asyncHandler(async (req, res) => {
     
     const deleteAvatar = await deleteFromCloudinary(link, "image");
     
-    if(!deleteAvatar) {
-        throw new ApiError(500, "Something went wrong while deleting the old avatar");
-    };
-
+    // if(!deleteAvatar) {
+    //     throw new ApiError(500, "Something went wrong while deleting the old avatar");
+    // };
 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
@@ -328,6 +327,11 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     if(!coverImageLocalPath) {
         throw new ApiError(400, "Cover image file is missing");
     };
+
+    const user = await User.findById(req.user._id);
+    const link = user.coverImage;
+    
+    await deleteFromCloudinary(link, "image");
 
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
