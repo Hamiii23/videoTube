@@ -36,7 +36,7 @@ const deleteFromCloudinary = async function (link, type) {
                 resource_type: type
             });
 
-            console.log(result);
+            // console.log(result);
     } catch (error) {
         console.log(error);
     }

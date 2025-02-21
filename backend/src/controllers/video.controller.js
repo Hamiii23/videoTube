@@ -82,12 +82,12 @@ const updateVideo = asyncHandler(async (req, res) => {
     
     if(title) {
         video.title = title;
-        await video.save({validateBeforeSave: false});
+        // await video.save({validateBeforeSave: false});
     };
 
     if(description) {
         video.description = description;
-        await video.save({validateBeforeSave: false});
+        // await video.save({validateBeforeSave: false});
     };
     
     const thumbnailLocalPath = req.file?.path;
@@ -101,8 +101,11 @@ const updateVideo = asyncHandler(async (req, res) => {
         const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
 
         video.thumbnail = thumbnail.url
-        await video.save({ validateBeforeSave: false });
+        // await video.save({ validateBeforeSave: false });
     };
+    
+    await video.save({ validateBeforeSave: false });
+
     
 
     const updatedVideo = await Video.findById(videoId);
@@ -150,6 +153,16 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
+
+    if(!videoId) {
+        throw new ApiError(400, "Invalid video ID");
+    };
+
+    await Video.findByIdAndUpdate(videoId, {
+        $set: {
+
+        }
+    })
 });
 
 
