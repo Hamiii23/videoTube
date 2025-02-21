@@ -167,8 +167,9 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     video.isPublished = changeState(video.isPublished);
     await video.save({ validateBeforeSave:false });
 
-
-    return res.status(200).json(
+    return res
+    .status(200)
+    .json(
         new ApiResponse(200, video, "Video status changed successfully")
     );
 });
