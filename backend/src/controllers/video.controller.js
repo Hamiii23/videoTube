@@ -158,11 +158,19 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid video ID");
     };
 
-    await Video.findByIdAndUpdate(videoId, {
-        $set: {
+    const video = await Video.findById(videoId);
+    
+    if (!video) {
+        throw new ApiError(500, "Error while looking for the video");
+    };
+    const changeState = (prevState) => !prevState
+    video.isPublished = changeState(video.isPublished);
+    await video.save({ validateBeforeSave:false });
 
-        }
-    })
+
+    return res.status(200).json(
+        new ApiResponse(200, video, "Video status changed successfully")
+    );
 });
 
 
