@@ -117,12 +117,129 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     );
 });
 
-const getLikedVideos = asyncHandler(async (req, res) => {});
+const getLikedVideos = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    const likedVideos = await Like.aggregate([
+        {
+            $match: {
+                likedBy: user._id
+            }
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "video",
+                foreignField: "_id",
+                as: "likedVideos"
+            }
+        },
+        {
+            $unwind: "$likedVideos"
+        },
+        {
+            $project: {
+                likedVideos: 1
+            }
+        }
+    ]);
+    
+    if(!likedVideos) {
+        throw new ApiError(500, "Something went wrong while fetching the liked videos");
+    };
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,likedVideos, "Liked videos fetched successfully")
+    );
+});
+
+
+const getLikedComments = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    const likedComments = await Like.aggregate([
+        {
+            $match: {
+                likedBy: user._id
+            }
+        },
+        {
+            $lookup: {
+                from: "comments",
+                localField: "comment",
+                foreignField: "_id",
+                as: "likedComments"
+            }
+        },
+        {
+            $unwind: "$likedComments"
+        },
+        {
+            $project: {
+                likedComments: 1
+            }
+        }
+    ]);
+    
+    if(!likedComments) {
+        throw new ApiError(500, "Something went wrong while fetching the liked comments");
+    };
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, likedComments, "Liked comments fetched successfully")
+    );
+});
+
+const getLikedTweets = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    const likedTweets = await Like.aggregate([
+        {
+            $match: {
+                likedBy: user._id
+            }
+        },
+        {
+            $lookup: {
+                from: "tweets",
+                localField: "tweet",
+                foreignField: "_id",
+                as: "likedTweets"
+            }
+        },
+        {
+            $unwind: "$likedTweets"
+        },
+        {
+            $project: {
+                likedTweets: 1
+            }
+        }
+    ]);
+    
+    if(!likedTweets) {
+        throw new ApiError(500, "Something went wrong while fetching the liked tweets");
+    };
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, likedTweets, "Liked tweets fetched successfully")
+    );
+});
+
+
 
 
 export {
     toggleVideoLike,
     toggleCommentLike,
     toggleTweetLike,
-    getLikedVideos
+    getLikedVideos,
+    getLikedComments,
+    getLikedTweets
 }
