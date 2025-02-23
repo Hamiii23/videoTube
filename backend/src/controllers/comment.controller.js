@@ -12,7 +12,49 @@ const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid video ID");
     };
 
+    const videoComments = await Comment.aggregate([
+        {
+            $match: {
+                video: new mongoose.Types.ObjectId(videoId)
+            }
+        },
+        {
+            $project: {
+                owner: 1,
+                content: 1,
+                createdAt: 1
+            }
+        }
+    ]);
+
+    if(!videoComments) {
+        throw new ApiError(500, "Something went wrong while fetching the comments");
+    };
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, videoComments, "Comments for the video found successfully")
+    );
+});
+
+const getUserComments = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { page = 1, limit = 1 } = req.query;
+
     const userComments = await Comment.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(userId)
+            }
+        },
+        {
+            $project: {
+                video: 1,
+                content: 1,
+                createdAt: 1
+            }
+        }
     ]);
 
     if(!userComments) {
@@ -22,10 +64,10 @@ const getVideoComments = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200,userComments, "Comments for the video found successfully")
+        new ApiResponse(200, userComments, "Comments of the user found successfully")
     );
-
 });
+
 const addComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
     const { videoId } = req.params;
@@ -134,5 +176,6 @@ export {
     getVideoComments,
     addComment,
     updateComment,
-    deleteComment
+    deleteComment,
+    getUserComments
 }
