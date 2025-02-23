@@ -13,17 +13,6 @@ const getVideoComments = asyncHandler(async (req, res) => {
     };
 
     const userComments = await Comment.aggregate([
-        {
-            $match: {
-                video: videoId
-            }
-        },
-        {
-            $project: {
-                content: 1,
-                owner: 1
-            }
-        }
     ]);
 
     if(!userComments) {
