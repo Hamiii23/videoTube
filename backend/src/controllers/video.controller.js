@@ -8,6 +8,40 @@ import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js
 
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+
+    if(!userId) {
+        throw new ApiError(400, "Invalid User ID");
+    };
+
+    const userVideos = await Video.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(userId)
+            }
+        },
+        {
+            $project: {
+                videoFile: 1,
+                thumbnail: 1,
+                createdAt: 1,
+                title: 1,
+                description: 1,
+                views: 1,
+                duration: 1,
+                isPublished: 1
+            }
+        }
+    ]);
+
+    if (!userVideos) {
+        throw new ApiError(500, "Something went wrong while looking for user videos");
+    };
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, userVideos, "User videos found successfully")
+    );
 });
 
 const publishVideo = asyncHandler(async (req, res) => {
