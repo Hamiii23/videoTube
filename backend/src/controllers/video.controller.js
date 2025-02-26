@@ -13,11 +13,21 @@ const getAllVideos = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid User ID");
     };
 
+    const sortStage = sortType == "ascending" ? 1 : -1
+
     const userVideos = await Video.aggregate([
         {
             $match: {
                 owner: new mongoose.Types.ObjectId(userId)
             }
+        },
+        {
+            $limit: Number(limit)
+        },
+        {
+            $sort: {
+                [sortBy]: sortStage
+            } 
         },
         {
             $project: {
