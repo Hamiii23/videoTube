@@ -19,6 +19,9 @@ const getVideoComments = asyncHandler(async (req, res) => {
             }
         },
         {
+            $limit: limit
+        },
+        {
             $project: {
                 owner: 1,
                 content: 1,
