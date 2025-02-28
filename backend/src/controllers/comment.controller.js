@@ -19,7 +19,10 @@ const getVideoComments = asyncHandler(async (req, res) => {
             }
         },
         {
-            $limit: limit
+            $skip: (Number(page) - 1) * Number(limit) 
+        },
+        {
+            $limit: Number(limit)
         },
         {
             $project: {
@@ -50,6 +53,12 @@ const getUserComments = asyncHandler(async (req, res) => {
             $match: {
                 owner: new mongoose.Types.ObjectId(userId)
             }
+        },
+        {
+            $limit: Number(limit)
+        },
+        {
+            $skip: (Number(page) - 1) * Number(limit)
         },
         {
             $project: {

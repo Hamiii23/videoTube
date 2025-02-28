@@ -13,7 +13,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid User ID");
     };
 
-    const sortStage = sortType == "ascending" ? 1 : -1
+    const sortStage = sortType == "ascending" ? 1 : -1;
+    const pageNum = Number(page) - 1;
 
     const userVideos = await Video.aggregate([
         {
@@ -23,6 +24,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
         },
         {
             $limit: Number(limit)
+        },
+        {
+            $skip: (Number(page) - 1) * Number(limit) 
         },
         {
             $sort: {
