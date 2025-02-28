@@ -55,10 +55,10 @@ const getUserComments = asyncHandler(async (req, res) => {
             }
         },
         {
-            $limit: Number(limit)
+            $skip: (Number(page) - 1) * Number(limit)
         },
         {
-            $skip: (Number(page) - 1) * Number(limit)
+            $limit: Number(limit)
         },
         {
             $project: {
