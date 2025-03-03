@@ -152,12 +152,9 @@ const updateVideo = asyncHandler(async (req, res) => {
         // await video.save({ validateBeforeSave: false });
     };
     
-    await video.save({ validateBeforeSave: false });
+    const updatedVideo = await video.save({ validateBeforeSave: false });
 
     
-
-    const updatedVideo = await Video.findById(videoId);
-
     if(!updatedVideo) {
         throw new ApiError(500, "Something went wrong while updating the video");
     };
@@ -165,7 +162,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200, updatedVideo, "Video updated successfully")
+        new ApiResponse(200, video, "Video updated successfully")
     );
 });
 
