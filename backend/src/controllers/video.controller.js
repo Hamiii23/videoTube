@@ -18,19 +18,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const userVideos = await Video.aggregate([
         {
             $match: {
-                owner: new mongoose.Types.ObjectId(userId)
+                owner: new mongoose.Types.ObjectId(userId),
+                isPublished: true
             }
+        },
+        {
+            $sort: {
+                [sortBy]: sortStage
+            } 
         },
         {
             $skip: (Number(page) - 1) * Number(limit) 
         },
         {
             $limit: Number(limit)
-        },
-        {
-            $sort: {
-                [sortBy]: sortStage
-            } 
         },
         {
             $project: {
@@ -109,6 +110,13 @@ const getVideoById = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Something went wrong while looking for the video");
     };
 
+    if(video.isPublished == false) {
+        if(!video.owner.equals(req.user._id)) {
+            throw new ApiError(401, "Unauthorized Request");
+        };
+    };
+
+
     return res
     .status(200)
     .json(
@@ -126,15 +134,17 @@ const updateVideo = asyncHandler(async (req, res) => {
     const video = await Video.findById(videoId);
     
     const {title, description} = req.body;
+
+    if(!video.owner.equals(req.user._id)) {
+        throw new ApiError(401, "Unauthorized Request");
+    };
     
     if(title) {
         video.title = title;
-        // await video.save({validateBeforeSave: false});
     };
 
     if(description) {
         video.description = description;
-        // await video.save({validateBeforeSave: false});
     };
     
     const thumbnailLocalPath = req.file?.path;
@@ -148,7 +158,6 @@ const updateVideo = asyncHandler(async (req, res) => {
         const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
 
         video.thumbnail = thumbnail.url
-        // await video.save({ validateBeforeSave: false });
     };
     
     const updatedVideo = await video.save({ validateBeforeSave: false });
@@ -173,12 +182,24 @@ const deleteVideo = asyncHandler(async (req, res) => {
     };
 
     const video = await Video.findById(videoId);
+
+    if(!video.owner.equals(req.user._id)) {
+        throw new ApiError(401, "Unauthorized Request");
+    };
+
     const videoLink = video.videoFile;
     const thumbnailLink = video.thumbnail;
     
-    await deleteFromCloudinary(videoLink, "video");
-    await deleteFromCloudinary(thumbnailLink, "image");
+    const videoDeleteFromCloudinary = await deleteFromCloudinary(videoLink, "video");
+    const thumbnailDeleteFromCloudinary = await deleteFromCloudinary(thumbnailLink, "image");
 
+    if(!videoDeleteFromCloudinary) {
+        throw new ApiError(500, "Something went wrong while deleting the video from Cloudinary");
+    };
+    
+    if(!thumbnailDeleteFromCloudinary) {
+        throw new ApiError(500, "Something went wrong while deleting the thumbnail from Cloudinary");
+    };
 
     const deleteVideo = await Video.deleteOne({
         _id: videoId
@@ -203,6 +224,10 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     };
 
     const video = await Video.findById(videoId);
+
+    if(!video.owner.equals(req.user._id)) {
+        throw new ApiError(401, "Unauthorized Request");
+    };
     
     if (!video) {
         throw new ApiError(500, "Error while looking for the video");
@@ -226,4 +251,4 @@ export {
     updateVideo,
     deleteVideo,
     togglePublishStatus
-}
+};
